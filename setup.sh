@@ -4,5 +4,8 @@ minikube addons enable dashboard;
 kubectl apply -f srcs/yaml/metallb.yaml;
 eval $(minikube docker-env);
 docker build -t nginx:latest srcs/nginx/;
-kubectl create -f srcs/yaml/nginx.yaml;
+docker build -t mysql:latest srcs/mysql/;
+docker build -t wordpress:latest srcs/wordpress/;
+docker build -t phpmyadmin:latest srcs/phpmyadmin/;
+kubectl create -f srcs/yaml/
 minikube dashboard;
