@@ -6,7 +6,7 @@
 #    By: jiandre <jiandre@student.42.fr>            +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2020/09/10 15:49:50 by kwillum           #+#    #+#              #
-#    Updated: 2020/10/20 18:42:44 by jiandre          ###   ########.fr        #
+#    Updated: 2020/10/20 19:01:58 by jiandre          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -25,7 +25,7 @@ RUN	printf "test file\n" > /jiandre/Readme.txt
 RUN	printf "rootdlik\nrootdlik\n" | adduser jiandre -s /bin/false -h /jiandre
 RUN	printf "/bin/false\n" >> /etc/shells
 RUN	chown jiandre:jiandre /jiandre
-RUN openssl req -x509 -nodes -days 365 -newkey rsa:2048 -subj '/C=AB/ST=CD/L=EF/O=21/CN=jiandre' -keyout /etc/vsftpd/ftps.key -out /etc/vsftpd/ftps.crt
+RUN openssl req -x509 -nodes -days 365 -newkey rsa:2048 -subj '/C=RF/ST=MSK/L=SCH/O=21/CN=jiandre' -keyout /etc/vsftpd/ftps.key -out /etc/vsftpd/ftps.crt
 
 EXPOSE	20 21 21000-22000
 

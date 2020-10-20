@@ -1,0 +1,91 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: telegraf-config
+  labels:
+    app: telegraf
+data:
+  telegraf.conf: |
+    [global_tags]
+    [agent]
+    interval = "10s"
+    round_interval = true
+      metric_batch_size = 1000
+      metric_buffer_limit = 10000
+      collection_jitter = "0s"
+      flush_interval = "10s"
+      flush_jitter = "0s"
+      precision = ""
+      hostname = ""
+      omit_hostname = true
+    [[outputs.influxdb]]
+      urls = ["$INFLUXDB_URL"]
+      database = "$INFLUXDB_DB"
+      username = "$INFLUXDB_USER"
+      password = "$INFLUXDB_USER_PASSWORD"
+    [[inputs.docker]]
+      endpoint = "unix:///var/run/docker.sock"
+      gather_services = false
+      container_name_include = []
+      perdevice = true
+      total = true
+      docker_label_include = []
+      tag_env = ["JAVA_HOME", "HEAP_SIZE"]
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: telegraf-secret
+type: Opaque
+stringData:
+  INFLUXDB_DB: telegraf
+  INFLUXDB_URL: http://cip-influxdb:8086
+  INFLUXDB_USER: root
+  INFLUXDB_PASSWORD: root
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cip-telegraf
+spec:
+  selector:
+    app: telegraf
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: telegraf
+spec:
+  selector:
+    matchLabels:
+      app: telegraf
+  replicas: 1
+  minReadySeconds: 5
+  template:
+    metadata:
+      name: telegraf
+      labels:
+        app: telegraf
+    spec:
+      containers:
+        - name: telegraf-container
+          image: telegraf
+          imagePullPolicy: Never
+          volumeMounts:
+            - name: telegraf-config
+              mountPath: /etc/telegraf/telegraf.conf
+              subPath: telegraf.conf
+              readOnly: true
+            - name: docker-socket
+              mountPath: /var/run/docker.sock
+          envFrom:
+            - secretRef:
+                name: telegraf-secret
+      volumes:
+        - name: telegraf-config
+          configMap:
+            name: telegraf-config
+        - name: docker-socket
+          hostPath:
+            path: /var/run/docker.sock
+            type: Socket

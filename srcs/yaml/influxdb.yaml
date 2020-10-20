@@ -1,0 +1,111 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: influxdb-config
+  labels:
+    app: influxdb
+data:
+  influxdb.conf: |
+    bind-adress="127.0.0.1:8088"
+    [meta]
+      dir="/var/lib/influxdb/meta"
+    [data]
+      dir="/var/lib/influxdb/data"
+      wal-dir = "/var/lib/influxdb/wal"
+      trace-logging-enable=true
+    [http]
+      bind-addres=":8088"
+      log-enabled=true
+    [[graphite]]
+      database="telegraf"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cip-influxdb
+  labels:
+    app: influxdb
+spec:
+  selector:
+    app: influxdb
+  ports:
+    - protocol: TCP
+      port: 8086
+      targetPort: 8086
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: influxdb
+spec:
+  selector:
+    matchLabels:
+      app: influxdb
+  replicas: 1
+  minReadySeconds: 5
+  template:
+    metadata:
+      name: influxdb
+      labels:
+        app: influxdb
+    spec:
+      containers:
+        - name: influxdb-container
+          image: influxdb
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8086
+          volumeMounts:
+            - name: influxdb-volume
+              mountPath: /var/lib/influxdb
+            - name: influxdb-config
+              mountPath: /etc/influxdb/influxdb.conf
+              subPath: influxdb.conf
+              readOnly: true
+          envFrom:
+            - secretRef:
+                name: influxdb-secret
+          env:
+            - name: INFLUXDB_CONFIG_PATH
+              value: "/etc/influxdb/influxdb.conf"
+            - name: INFLUXDB_BIND_ADDRESS
+              value: "127.0.0.1:8088"
+            - name: INFLUXDB_META_DIR
+              value: "/var/lib/influxdb/meta"
+            - name: INFLUXDB_DATA_DIR
+              value: "/var/lib/influxdb/data"
+      volumes:
+        - name: influxdb-volume
+          persistentVolumeClaim:
+            claimName: influxdb-pvc
+        - name: influxdb-config
+          configMap:
+            name: influxdb-config
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: influxdb-pvc
+  labels:
+    app: influxdb
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 500Mi
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: influxdb-secret
+  labels:
+    app: influxdb
+type: Opaque
+stringData:
+  INFLUXDB_CONFIG_PATH: /etc/influxdb/influxdb.conf
+  INFLUXDB_ADMIN_USER: root
+  INFLUXDB_ADMIN_PASSWORD: root
+  INFLUXDB_DB: telegraf
+  INFLUXDB_USER: root
+  INFLUXDB_USER_PASSWORD: root
