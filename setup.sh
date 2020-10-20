@@ -7,5 +7,6 @@ docker build -t nginx:latest srcs/nginx/;
 docker build -t mysql:latest srcs/mysql/;
 docker build -t wordpress:latest srcs/wordpress/;
 docker build -t phpmyadmin:latest srcs/phpmyadmin/;
+docker build -t ftps srcs/ftps;
 kubectl create -f srcs/yaml/
 minikube dashboard;
