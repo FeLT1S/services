@@ -21,8 +21,6 @@ spec:
         ports:
         - containerPort: 5000
         env:
-          - name: MYSQL_ROOT_PASSWORD
-            value: "wquinoa"
           - name: PMA_HOST
             value: "cip-mysql"
 ---
