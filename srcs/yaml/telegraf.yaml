@@ -43,14 +43,6 @@ stringData:
   INFLUXDB_USER: root
   INFLUXDB_PASSWORD: root
 ---
-apiVersion: v1
-kind: Service
-metadata:
-  name: cip-telegraf
-spec:
-  selector:
-    app: telegraf
----
 apiVersion: apps/v1
 kind: Deployment
 metadata:
